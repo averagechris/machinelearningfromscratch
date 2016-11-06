@@ -2,6 +2,7 @@ package mlscratchlib
 
 import (
 	"reflect"
+	"sort"
 	"testing"
 )
 
@@ -13,6 +14,60 @@ var vec10a = []float64{1, 1, 2, 2, 3, 3, 4, 4, 5, 5}
 
 // sample matrixes for testing
 var matrix3a = [][]float64{vec8a, vec8b, vec8c}
+
+func TestSumValues(t *testing.T) {
+	var expected, result float64
+	result = SumValues(vec8b)
+	expected = 36
+
+	if result != expected {
+		t.Errorf("\nExpected: %f\nGot: %f", expected, result)
+	}
+}
+
+func TestVectorMean(t *testing.T) {
+	var expected, result float64
+	result = VectorMean(vec8a)
+	expected = 62.875
+
+	if result != expected {
+		t.Errorf("\nExpected: %f\nGot: %f", expected, result)
+	}
+}
+
+func TestRangeVector(t *testing.T) {
+	var expected, result float64
+	result = RangeVector(vec8b)
+	expected = 7
+
+	if result != expected {
+		t.Errorf("\nExpected: %f\nGot: %f", expected, result)
+	}
+}
+
+func TestVectorMedian(t *testing.T) {
+	var expected, result float64
+	result = VectorMedian([]float64{})
+	expected = 0
+
+	if result != expected {
+		t.Errorf("\nExpected: %f\nGot: %f", expected, result)
+	}
+
+	result = VectorMedian(vec8b) // {1, 2, 3, 4, 5, 6, 7, 8}
+	expected = 4.5               // average of 4 & 5 the middle two elements
+
+	if result != expected {
+		t.Errorf("\nExpected: %f\nGot: %f", expected, result)
+	}
+
+	result = VectorMedian([]float64{0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 101})
+	expected = 50
+
+	if result != expected {
+		t.Errorf("\nExpected: %f\nGot: %f", expected, result)
+	}
+}
 
 func TestAddVector(t *testing.T) {
 	var err error
@@ -106,6 +161,61 @@ func TestMeanVector(t *testing.T) {
 	}
 }
 
+func TestQuantileVector(t *testing.T) {
+	var err error
+	var expected, result float64
+
+	result, err = QuantileVector(vec8b, .50)
+	expected = 5
+
+	if err != nil {
+		t.Errorf("Error: %v", err)
+	}
+
+	if result != expected {
+		t.Errorf("Expected result of:\n%v\ngot result:\n%v", expected, result)
+	}
+}
+
+func TestModeVector(t *testing.T) {
+	var err error
+	var expected, result []float64
+
+	result, err = ModeVector(vec8b)
+	expected = nil // because they all have the same number of occurrences
+
+	if err != nil {
+		t.Errorf("Error: %v", err)
+	}
+
+	if !reflect.DeepEqual(result, expected) {
+		t.Errorf("Expected result of:\n%v\ngot result:\n%v", expected, result)
+	}
+
+	result, err = ModeVector([]float64{1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 9, 5, 5, 5, 5, 5, 5, 5, 5, 9, 9, 7, 1, 2, 1})
+	expected = []float64{5} // because 5 occurs the most times in the list
+
+	if err != nil {
+		t.Errorf("Error: %v", err)
+	}
+
+	if !reflect.DeepEqual(result, expected) {
+		t.Errorf("Expected result of:\n%v\ngot result:\n%v", expected, result)
+	}
+
+	result, err = ModeVector([]float64{1, 1, 1, 2, 4, 5, 5, 5, 6, 7, 7, 7, 8, 9, 9, 0, 0})
+	sort.Float64s(result)         // elements are appended to a slice from a map, so can come out in dif orders every time
+	expected = []float64{1, 5, 7} // because each of these values occur three times
+
+	if err != nil {
+		t.Errorf("Error: %v", err)
+	}
+
+	if !reflect.DeepEqual(result, expected) {
+		t.Errorf("Expected result of:\n%v\ngot result:\n%v", expected, result)
+	}
+}
+
 func TestDotProduct(t *testing.T) {
 	var err error
 	var expected, result float64
@@ -186,6 +296,58 @@ func TestDistance(t *testing.T) {
 	}
 }
 
+func TestDeMeanVector(t *testing.T) {
+	var expected, result []float64
+
+	result = DeMeanVector(vec8a)
+	expected = []float64{36.125, -20.875, 12.125, -51.875, -49.875, 37.125, 34.125, 3.125}
+
+	if !reflect.DeepEqual(result, expected) {
+		t.Errorf("Expected result of:\n%v\ngot result:\n%v", expected, result)
+	}
+}
+
+func TestVarianceVector(t *testing.T) {
+	var expected, result float64
+
+	result = VarianceVector(vec8a) // 99, 42, 75, 11, 13, 100, 97, 66
+	expected = 1374.125
+
+	if result != expected {
+		t.Errorf("Expected result of:\n%v\ngot result:\n%v", expected, result)
+	}
+
+	result = VarianceVector([]float64{11111111.111111111})
+	expected = 0
+
+	if result != expected {
+		t.Errorf("Expected result of:\n%v\ngot result:\n%v", expected, result)
+	}
+}
+
+func TestStandardDeviationVector(t *testing.T) {
+	var expected, result float64
+
+	result = StandardDeviationVector(vec8a)
+	expected = 37.069192060254025
+
+	if result != expected {
+		t.Errorf("Expected result of:\n%v\ngot result:\n%v", expected, result)
+	}
+}
+
+func TestInterQuartileRangeVector(t *testing.T) {
+	var expected, result float64
+
+	result = InterQuartileRangeVector(vec8a)
+	expected = 57
+
+	if result != expected {
+		t.Errorf("Expected result of:\n%v\ngot result:\n%v", expected, result)
+	}
+
+}
+
 func TestShape(t *testing.T) {
 	var columns, rows, eColumns, eRows int
 
@@ -224,7 +386,11 @@ func TestGetColumn(t *testing.T) {
 	var err error
 	var expected, result []float64
 
-	result, err = GetColumn(matrix3a, 1)
+	t.Logf("%v", matrix3a)
+
+	matrix := [][]float64{{99, 42, 75, 11, 13, 100, 97, 66}, {1, 2, 3, 4, 5, 6, 7, 8}, {2.2, 93.1, 8, 0.01, 3, 55, 77.001, 1000.00}}
+
+	result, err = GetColumn(matrix, 1)
 	expected = []float64{42, 2, 93.1}
 
 	if err != nil {

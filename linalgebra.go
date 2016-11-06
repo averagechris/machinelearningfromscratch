@@ -3,13 +3,113 @@ package mlscratchlib
 import (
 	"errors"
 	"math"
+	"sort"
 )
+
+// SumValues accepts a []float64 vector and returns the sum of each
+// of it's elements as a float64
+func SumValues(vector []float64) (sum float64) {
+	sum = 0
+	for _, element := range vector {
+		sum += element
+	}
+	return sum
+}
+
+// VectorMean accepts a []float64 vector and returns a float64 number
+// that represents the mean value of the elements in the vector
+func VectorMean(vector []float64) (meanValue float64) {
+	if len(vector) < 1 {
+		return 0
+	}
+	return SumValues(vector) / float64(len(vector))
+}
+
+// VectorMedian accepts a []float64 vector and returns the element
+// which is in the middle most index when the vector is sorted from
+// low to high if there are an odd number of elements and the average
+// of the two middle-most elements if the number of elements is even
+func VectorMedian(vector []float64) (medianValue float64) {
+	if len(vector) < 1 {
+		return 0
+	}
+	sort.Float64s(vector)
+
+	if len(vector)%2 != 0 {
+		// if there are an odd number of elements, return the one in the middle index
+		middleIndex := (len(vector) / 2)
+		return vector[middleIndex]
+	}
+
+	// return the average of the two middle-most elements
+	high := len(vector) / 2
+	low := high - 1
+	average := (vector[high] + vector[low]) / 2
+
+	return average
+}
+
+// QuantileVector accepts a vector []float64 and a decimal to represent the percentile
+// of the element that you want to return.
+func QuantileVector(vector []float64, percentile float64) (quantile float64, err error) {
+	if len(vector) < 1 {
+		return 0, errors.New("something went wrong vector length is 0")
+	}
+	if percentile < 0 {
+		return 0, errors.New("percentile must be a decimal between 0 and 1")
+	} else if percentile > 1 {
+		return 0, errors.New("percentile must be a decimal between 0 and 1")
+	}
+	index := int(percentile * float64(len(vector)))
+	sort.Float64s(vector)
+
+	return vector[index], nil
+}
+
+// ModeVector accepts a vector []float64 and returns a slice of the most common
+// of the most common value or values. Can be a slice of 1 element or more.
+func ModeVector(vector []float64) (mode []float64, err error) {
+	occurences := make(map[float64]int)
+	for _, element := range vector {
+		if occurences[element] == 0 {
+			occurences[element] = 1 // adds the element to the occurrences map and initializes it to 1 occurrence
+			continue
+		}
+		occurences[element]++ // increments the occurrence of the element
+	}
+
+	var max int
+	for element, occurrence := range occurences {
+		if occurrence == max {
+			mode = append(mode, element)
+		} else if occurrence > max {
+			mode = []float64{} // reset mode to remove previous maxes
+			mode = append(mode, element)
+			max = occurrence
+		}
+	}
+
+	if max <= 1 {
+		return nil, nil // there is no value more than one occurrence
+	}
+	return mode, nil
+}
+
+// RangeVector accepts a vector and returns a float64 that represents the
+// difference between the highest and the lowest values in the vector
+func RangeVector(vector []float64) float64 {
+	if len(vector) < 1 {
+		return 0
+	}
+	sort.Float64s(vector)
+	return vector[len(vector)-1] - vector[0]
+}
 
 // AddVector returns a new vector whose elements are the sum of each
 // element of the given vectors a and b
 func AddVector(a []float64, b []float64) (vector []float64, err error) {
 	if len(a) != len(b) {
-		return nil, err
+		return nil, errors.New("the vectors must have the same number of elements")
 	}
 	for i := range a {
 		vector = append(vector, a[i]+b[i])
@@ -21,7 +121,7 @@ func AddVector(a []float64, b []float64) (vector []float64, err error) {
 // between vector a and vector b
 func SubtractVector(a []float64, b []float64) (vector []float64, err error) {
 	if len(a) != len(b) {
-		return nil, err
+		return nil, errors.New("the vectors must have the same number of elements")
 	}
 	for i := range a {
 		vector = append(vector, a[i]-b[i])
@@ -57,6 +157,9 @@ func ScalarMultiply(num float64, v []float64) (vector []float64) {
 // MeanVector accepts a slice of vectors, sums each element of each
 // vector and returns the mean vector
 func MeanVector(vectors []([]float64)) (vector []float64, err error) {
+	if len(vectors) < 1 {
+		return nil, errors.New("something went wrong, vectors has 0 elements")
+	}
 	sumvec, err := SumVectors(vectors)
 	if err != nil {
 		return nil, err
@@ -144,9 +247,50 @@ func Distance(a []float64, b []float64) (float64, error) {
 	return result, nil
 }
 
+// DeMeanVector accepts a vector, computes the mean and subtracts the mean
+// from each element of the vector and returns the vector so that the resulting
+// vector has a 0 mean
+func DeMeanVector(vector []float64) (result []float64) {
+	mean := VectorMean(vector)
+	for _, element := range vector {
+		result = append(result, element-mean)
+	}
+	return result
+}
+
+// VarianceVector accepts a vector, returns a float that represents the
+// amount of variance there is in the data within the vector
+func VarianceVector(vector []float64) float64 {
+	if len(vector) < 2 {
+		return 0
+	}
+	deviations := DeMeanVector(vector)
+	sumos, _ := SumofSquares(deviations)
+	divisor := len(vector) - 1
+	return sumos / float64(divisor)
+}
+
+// StandardDeviationVector accepts a vector, gets the variance and
+// returns the square root of the variance
+func StandardDeviationVector(vector []float64) float64 {
+	return math.Sqrt(VarianceVector(vector))
+}
+
+// InterQuartileRangeVector accepts a vector, calculates the
+// quantile for the 25 and 75 percentiles and returns the difference
+// as a float.
+func InterQuartileRangeVector(vector []float64) float64 {
+	upper, _ := QuantileVector(vector, 0.75)
+	lower, _ := QuantileVector(vector, 0.25)
+	return upper - lower
+}
+
 // Shape accepts a matrix of [][]float and returns
 // two ints: the number of colums and the number of rows
 func Shape(matrix [][]float64) (rows int, columns int) {
+	if len(matrix) < 1 {
+		return 0, 0
+	}
 	return len(matrix), len(matrix[0])
 }
 
@@ -164,15 +308,15 @@ func GetRow(matrix [][]float64, number int) (row []float64, err error) {
 // GetColumn accepts a matrix of [][]float and a number n
 // returns a vector whose elements are the element of the nth
 // index of each row
-func GetColumn(matrix [][]float64, number int) (row []float64, err error) {
+func GetColumn(matrix [][]float64, number int) (column []float64, err error) {
 	if number > len(matrix) {
 		return nil, errors.New("Index out of range.")
 	}
 	for _, r := range matrix {
-		row = append(row, r[number])
+		column = append(column, r[number])
 	}
 
-	return row, nil
+	return column, nil
 }
 
 // CreateMatrix accepts two integers, for number of rows and
