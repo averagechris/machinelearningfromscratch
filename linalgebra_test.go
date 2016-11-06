@@ -11,6 +11,9 @@ var vec8b = []float64{1, 2, 3, 4, 5, 6, 7, 8}
 var vec8c = []float64{2.2, 93.1, 8, 0.01, 3, 55, 77.001, 1000.00}
 var vec10a = []float64{1, 1, 2, 2, 3, 3, 4, 4, 5, 5}
 
+// sample matrixes for testing
+var matrix3a = [][]float64{vec8a, vec8b, vec8c}
+
 func TestAddVector(t *testing.T) {
 	var err error
 	var expected []float64
@@ -179,6 +182,92 @@ func TestDistance(t *testing.T) {
 	}
 
 	if result != expected {
+		t.Errorf("Expected result of:\n%v\ngot result:\n%v", expected, result)
+	}
+}
+
+func TestShape(t *testing.T) {
+	var columns, rows, eColumns, eRows int
+
+	rows, columns = Shape(matrix3a)
+	eRows, eColumns = 3, 8
+
+	if columns != eColumns || rows != eRows {
+		t.Errorf("Expected Columns: %d, Rows: %d\nGot Columns: %d, Rows: %d", eColumns, eRows, columns, rows)
+	}
+}
+
+func TestGetRow(t *testing.T) {
+	var err error
+	var expected, result []float64
+
+	result, err = GetRow(matrix3a, 0)
+	expected = vec8a
+
+	if err != nil {
+		t.Errorf("Error: %v", err)
+	}
+
+	if !reflect.DeepEqual(result, expected) {
+		t.Errorf("Expected result of:\n%v\ngot result:\n%v", expected, result)
+	}
+
+	result, err = GetRow(matrix3a, len(matrix3a)+1)
+	expected = nil
+
+	if !reflect.DeepEqual(result, expected) {
+		t.Errorf("Expected result of:\n%v\ngot result:\n%v", expected, result)
+	}
+}
+
+func TestGetColumn(t *testing.T) {
+	var err error
+	var expected, result []float64
+
+	result, err = GetColumn(matrix3a, 1)
+	expected = []float64{42, 2, 93.1}
+
+	if err != nil {
+		t.Errorf("Error: %v", err)
+	}
+
+	if !reflect.DeepEqual(result, expected) {
+		t.Errorf("Expected result of:\n%v\ngot result:\n%v", expected, result)
+	}
+
+	result, err = GetColumn(matrix3a, len(matrix3a)+1)
+	expected = nil
+
+	if !reflect.DeepEqual(result, expected) {
+		t.Errorf("Expected result of:\n%v\ngot result:\n%v", expected, result)
+	}
+}
+
+func TestCreateMatrix(t *testing.T) {
+	var expected, result [][]float64
+
+	result = CreateMatrix(5, 3, IsDiagonal)
+	expected = [][]float64{{1, 0, 0, 0, 0}, {0, 1, 0, 0, 0}, {0, 0, 1, 0, 0}}
+
+	if !reflect.DeepEqual(result, expected) {
+		t.Errorf("Expected result of:\n%v\ngot result:\n%v", expected, result)
+	}
+}
+
+func TestIsDiagonal(t *testing.T) {
+	var expected, result float64
+
+	result = IsDiagonal(0, 1)
+	expected = 0
+
+	if !reflect.DeepEqual(result, expected) {
+		t.Errorf("Expected result of:\n%v\ngot result:\n%v", expected, result)
+	}
+
+	result = IsDiagonal(0, 0)
+	expected = 1
+
+	if !reflect.DeepEqual(result, expected) {
 		t.Errorf("Expected result of:\n%v\ngot result:\n%v", expected, result)
 	}
 }

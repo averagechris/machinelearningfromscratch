@@ -143,3 +143,58 @@ func Distance(a []float64, b []float64) (float64, error) {
 
 	return result, nil
 }
+
+// Shape accepts a matrix of [][]float and returns
+// two ints: the number of colums and the number of rows
+func Shape(matrix [][]float64) (rows int, columns int) {
+	return len(matrix), len(matrix[0])
+}
+
+// GetRow accepts a matirx of [][]float and an integer
+// then returns the row of the matrix coresponding to
+// the integer. These matrixes are 0 indexed so GetRow(1)
+// will return the 2nd row of the matrix
+func GetRow(matrix [][]float64, number int) (row []float64, err error) {
+	if number > len(matrix) {
+		return nil, errors.New("Index out of range.")
+	}
+	return matrix[number], nil
+}
+
+// GetColumn accepts a matrix of [][]float and a number n
+// returns a vector whose elements are the element of the nth
+// index of each row
+func GetColumn(matrix [][]float64, number int) (row []float64, err error) {
+	if number > len(matrix) {
+		return nil, errors.New("Index out of range.")
+	}
+	for _, r := range matrix {
+		row = append(row, r[number])
+	}
+
+	return row, nil
+}
+
+// CreateMatrix accepts two integers, for number of rows and
+// number of columns, it also accepts an "entry function" that
+// is used to set the value of a cell within the matrix based on
+// the position of the cell.
+func CreateMatrix(columns int, rows int, entryFunction func(int, int) float64) (matrix [][]float64) {
+	for i := 0; i < rows; i++ {
+		matrix = append(matrix, make([]float64, columns))
+		for index := range matrix[i] {
+			matrix[i][index] = entryFunction(i, index)
+		}
+	}
+	return matrix
+}
+
+// IsDiagonal is an entry function for CreateMatrix that accepts
+// two integers and returns a single float - 1 if the two integers
+// match or a 0 if the integers do not match.
+func IsDiagonal(x int, y int) float64 {
+	if x == y {
+		return 1
+	}
+	return 0
+}
