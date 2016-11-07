@@ -270,10 +270,55 @@ func VarianceVector(vector []float64) float64 {
 	return sumos / float64(divisor)
 }
 
+// Covariance accepts two vectors and returns a float that represents the
+// amount of variance the two values of the two vectors have in tandem
+func Covariance(a []float64, b []float64) (float64, error) {
+	if len(a) != len(b) {
+		return 0, errors.New("vectors must be the same length")
+	} else if len(a) < 1 {
+		return 0, errors.New("something went wrong vector is 0 length")
+	}
+	deviations, err := DotProduct(DeMeanVector(a), DeMeanVector(b))
+	if err != nil {
+		return 0, err
+	}
+	return (deviations / float64(len(a)-1)), nil
+}
+
 // StandardDeviationVector accepts a vector, gets the variance and
 // returns the square root of the variance
 func StandardDeviationVector(vector []float64) float64 {
 	return math.Sqrt(VarianceVector(vector))
+}
+
+// Correlation accepts two vectors, gets the standard deviation of both
+// vector a and b, and returns the covariance of those numbers if they are
+// both greater than zero. Correlation returns a float64 that represents a
+// good indicator that the elements of the two vectors have an interesting
+// relationship. Correlation will always return a float between -1 and 1
+// 0 represents no correlation ie no ***LINEAR*** relationship
+// 1 represents perfect positive correlation
+// -1 represents perfect negative correlation
+func Correlation(a []float64, b []float64) (float64, error) {
+	if len(a) != len(b) {
+		return 0, errors.New("vectors must be the same length")
+	} else if len(a) < 1 {
+		return 0, errors.New("something went wrong, vector length is 0")
+	}
+
+	aStdDev := StandardDeviationVector(a)
+	bStdDev := StandardDeviationVector(b)
+
+	if aStdDev > 0 && bStdDev > 0 {
+		covar, err := Covariance(a, b)
+		if err != nil {
+			return 0, err
+		}
+		return (covar / aStdDev / bStdDev), nil
+	}
+
+	// one of the vectors has a std deviation of 0
+	return 0, nil
 }
 
 // InterQuartileRangeVector accepts a vector, calculates the

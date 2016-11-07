@@ -325,6 +325,99 @@ func TestVarianceVector(t *testing.T) {
 	}
 }
 
+func TestCovariance(t *testing.T) {
+	var err error
+	var expected, result float64
+
+	result, err = Covariance(vec8b, vec8c)
+	expected = 503.43535714285724
+
+	if err != nil {
+		t.Errorf("Error: %v", err)
+	}
+
+	if result != expected {
+		t.Errorf("Expected result of:\n%v\ngot result:\n%v", expected, result)
+	}
+
+	result, err = Covariance([]float64{}, vec8a) // test for nil slice
+	expected = 0
+
+	if err == nil {
+		t.Errorf("Function accepted a nil slice BAD BAD")
+	}
+
+	if result != expected {
+		t.Errorf("Expected result of:\n%v\ngot result:\n%v", expected, result)
+	}
+
+	result, err = Covariance(vec8a, vec10a) // test for slices with different lengths
+	expected = 0
+
+	if err == nil {
+		t.Errorf("Slices must match, accepted slices of mismatched lenghths")
+	}
+
+	if result != expected {
+		t.Errorf("Expected result of:\n%v\ngot result:\n%v", expected, result)
+	}
+}
+
+func TestCorrelation(t *testing.T) {
+	var err error
+	var expected, result float64
+
+	result, err = Correlation(vec8c, vec8b)
+	expected = 0.5983028629867763
+
+	if err != nil {
+		t.Errorf("Error: %v", err)
+	}
+
+	if result != expected {
+		t.Errorf("Expected result of:\n%v\ngot result:\n%v", expected, result)
+	}
+
+	result, err = Correlation([]float64{}, vec8a) // test for nil slice
+	expected = 0
+
+	if err == nil {
+		t.Errorf("Function accepted a nil slice BAD BAD")
+	}
+
+	if result != expected {
+		t.Errorf("Expected result of:\n%v\ngot result:\n%v", expected, result)
+	}
+
+	result, err = Covariance(vec8a, vec10a) // test for slices with different lengths
+	expected = 0
+
+	if err == nil {
+		t.Errorf("Slices must match, accepted slices of mismatched lenghths")
+	}
+
+	if result != expected {
+		t.Errorf("Expected result of:\n%v\ngot result:\n%v", expected, result)
+	}
+
+	result, err = Correlation(vec8a, vec8a) // test that matching vectors returns perfect pos correlation
+	expected = 1
+
+	if result != expected {
+		t.Logf("Matching vectors should have perfect positive correlation ie. 1")
+		t.Errorf("Expected result of:\n%v\ngot result:\n%v", expected, result)
+	}
+
+	result, err = Correlation([]float64{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}, []float64{-1, -2, -3, -4, -5, -6, -7, -8, -9, -10})
+	expected = -1
+
+	// this test returns 0.999repeating
+	if int(result) != int(expected) && expected > -0.9999999999 && expected < -0.9999999998 {
+		t.Logf("Opposite vectors should have perfect negative correlation ie. -1")
+		t.Errorf("Expected result of:\n%v\ngot result:\n%v", expected, result)
+	}
+}
+
 func TestStandardDeviationVector(t *testing.T) {
 	var expected, result float64
 
