@@ -111,8 +111,8 @@ func DotProduct(a, b Vector) (product float64, err error) {
 	return product, nil
 }
 
-// SquaredDistance returns the sum of squares of a vector that is the
-// result of subtracting the given vector a from the given vector b
+// SquaredDistance returns the sum of each element squared of a vector that
+// is the result of subtracting the given vector a from the given vector b
 func SquaredDistance(a, b Vector) (float64, error) {
 	subtracted, err := SubtractVectors(a, b)
 	if err != nil {
