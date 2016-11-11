@@ -119,7 +119,7 @@ func SquaredDistance(a, b Vector) (float64, error) {
 		return 0, err
 	}
 
-	result, err := SumOfSquares(subtracted)
+	result, err := subtracted.SumOfSquares()
 	if err != nil {
 		return 0, err
 	}
@@ -135,7 +135,7 @@ func Distance(a, b Vector) (float64, error) {
 		return 0, err
 	}
 
-	distance, err := Magnitude(vector)
+	distance, err := vector.Magnitude()
 	if err != nil {
 		return 0, err
 	}
@@ -361,7 +361,7 @@ func (v Vector) SumOfSquares() (sumofsquares float64, err error) {
 // Magnitude returns the magnitude of the vector
 // https://en.wikipedia.org/wiki/Magnitude_(mathematics)
 func (v Vector) Magnitude() (float64, error) {
-	s, err := SumOfSquares(v)
+	s, err := v.SumOfSquares()
 	if err != nil {
 		return 0, err
 	}
@@ -454,7 +454,7 @@ func (m Matrix) GetColumn(columnNumber int) (column Vector) {
 		return nil
 	}
 	for _, row := range m {
-		column = append(column, row[number])
+		column = append(column, row[columnNumber])
 	}
 
 	return column
