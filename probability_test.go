@@ -129,7 +129,6 @@ func TestInverseNormalCDF(t *testing.T) {
 	expected = 22
 
 	if result != expected {
-		t.Log(result, expected)
 		t.Errorf("\nExpected: %f\nGot: %f", expected, result)
 	}
 }
